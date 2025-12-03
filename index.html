@@ -1,185 +1,61 @@
-<style>
-    /* Import Lato font */
-    @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
-
-    .generator-container {
-        max-width: 600px;
-        margin: 20px auto;
-        padding: 20px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        font-family: 'Lato', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        color: #414042;
-    }
-    .generator-container h3 {
-        color: #414042;
-    }
-    .generator-container label {
-        display: block;
-        margin-top: 10px;
-        font-weight: bold;
-    }
-    .generator-container input[type="text"],
-    .generator-container textarea {
-        width: 100%;
-        padding: 8px;
-        margin-top: 5px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        box-sizing: border-box;
-        font-family: inherit;
-        color: inherit;
-    }
-    .generator-container .button-group {
-        display: flex;
-        gap: 10px;
-        margin-top: 20px;
-        margin-bottom: 20px;
-    }
-    .generator-container button {
-        background-color: #009ABC;
-        color: white;
-        padding: 10px 15px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 1em;
-        font-family: inherit;
-        transition: background-color 0.2s ease;
-        flex-grow: 1;
-        margin-top: 0;
-    }
-    .generator-container button:hover {
-        background-color: #006C91;
-    }
-    
-    #resetButton {
-        background-color: #A9A9A9;
-    }
-    #resetButton:hover {
-        background-color: #808080;
-    }
-
-    #outputCode {
-        background-color: #f4f4f4;
-        border: 1px solid #ddd;
-        padding: 15px;
-        margin-top: 5px;
-        white-space: pre-wrap;
-        word-break: break-all;
-        min-height: 50px;
-        font-family: monospace;
-        color: #333;
-    }
-    /* --- Syntax Highlighting Styles --- */
-    #outputCode .tag { /* HTML element names like div, iframe, p */
-        color: #000080; /* Dark Blue */
-        font-weight: bold;
-    }
-    #outputCode .attribute { /* Attribute names like style, class, src */
-        color: #8B0000; /* Dark Red */
-    }
-    #outputCode .value { /* Attribute values, especially strings like "flex", "center" */
-        color: #006400; /* Dark Green */
-    }
-    #outputCode .text { /* The actual text content, like the title in the p tag */
-        color: #333; /* Dark Grey/Black */
-    }
-    #outputCode .bracket { /* The angle brackets < and > */
-        color: #000080;
-        font-weight: bold;
-    }
-    /* --- End Syntax Highlighting Styles --- */
-
-    #copyButton {
-        padding: 8px 12px;
-        font-size: 0.9em;
-        margin-top: 10px;
-        background-color: #009ABC; 
-        transition: background-color 0.2s ease;
-        display: block;
-        width: 100%;
-        box-sizing: border-box;
-    }
-    #copyButton:hover {
-        background-color: #006C91;
-    }
-    
-</style>
-
-<div class="generator-container">
-    <h3>Echo video embed code generator (for Canvas LMS)</h3>
-
-    <label for="videoTitle">Video title:</label>
-    <input type="text" id="videoTitle" placeholder="Video title">
-
-    <label for="source">Source:</label>
-    <input type="text" id="source" value="UC">
-
-    <label for="year">Year:</label>
-    <input type="text" id="year" value="2026">
-
-    <label for="ltiCode">Echo LTI iframe code (paste full code including the opening and closing iframe tags):</label>
-    <textarea id="ltiCode" rows="5" placeholder=""></textarea>
-
-    <div class="button-group">
-        <button onclick="generateCode()">Generate HTML code</button>
-        <button id="resetButton" onclick="resetGenerator()">Reset generator</button>
-    </div>
-
-    <label for="outputCode">Generated code (copy and paste this code into the canvas page, replacing the original LTI iframe code):</label>
-    <div id="outputCode"></div>
-    
-    <button id="copyButton" onclick="copyCode()" style="display: none;">Copy code to clipboard</button>
-</div>
-
 <script>
     /**
-     * Corrected escapeHtml: Only escapes <, >, and & (leaving " intact for regex)
+     * Re-introducing proper full escaping for <, >, &, and " to ensure the code displays as raw text.
      */
     function escapeHtml(text) {
-        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
 
     /**
-     * Highlights HTML code by wrapping elements in span tags with specific classes.
-     * Assumes input is already escaped (except for quotes).
+     * Highlights fully HTML-escaped code by selectively inserting span tags.
      */
     function highlightCode(escapedCode) {
-        // Regex to match tags and content.
-        // Group 1: Opening tag bracket (&lt; or &lt;/)
-        // Group 2: Tag name (e.g., div, iframe)
-        // Group 3: Attributes string
-        // Group 4: Closing tag bracket (&gt;)
-        // Group 5: Content between tags/plain text
-        const htmlRegex = /(\s*&lt;[/!]?)(\w+)([^&]*)(&gt;)|(\s*[^&]*)/g;
+        // Regex to capture:
+        // Group 1: &lt; or &lt;/ (Opening/closing bracket start)
+        // Group 2: The tag name (e.g., div, iframe)
+        // Group 3: Attributes and closing bracket (&gt;)
+        // Group 4: Text content (everything not inside a tag)
+        const htmlRegex = /(\s*&lt;\/?)([a-zA-Z0-9]+)([^&]*&gt;)|([^&]+)/g;
 
         // Regex to match attributes within the attribute string
         // Group 1: Space
         // Group 2: Attribute name
-        // Group 3: ="
-        // Group 4: Attribute value
-        // Group 5: "
-        const attributeRegex = /(\s+)([a-z0-9-]+)(=)(")([^"]*)(")/gi;
-
-        let highlightedCode = escapedCode.replace(htmlRegex, (match, bracket, tag, attributes, closeBracket, text) => {
-            if (tag) { // It's a tag
-                // Highlight attributes within the tag
-                let highlightedAttributes = attributes.replace(attributeRegex, (attrMatch, space, attrName, equals, quoteOpen, attrValue, quoteClose) => {
-                    // Highlight attribute name, equals, and value, preserving quotes/spaces
+        // Group 3: =
+        // Group 4: &quot;
+        // Group 5: Attribute value content (non-quote)
+        // Group 6: &quot;
+        const attributeRegex = /(\s+)([a-z0-9-]+)(=)(&quot;)([^&]*)(&quot;)/gi;
+        
+        let highlightedCode = escapedCode.replace(htmlRegex, (match, bracketStart, tagName, attributesAndClose, textContent) => {
+            if (tagName) { // It's a tag
+                // 1. Highlight attributes
+                let highlightedAttributes = attributesAndClose.replace(attributeRegex, (attrMatch, space, attrName, equals, quoteOpen, attrValue, quoteClose) => {
+                    // Highlight attribute name, equals, and value
                     return `${space}<span class="attribute">${attrName}</span>${equals}${quoteOpen}<span class="value">${attrValue}</span>${quoteClose}`;
                 });
                 
-                // Highlight tag name and brackets
-                return `<span class="bracket">${bracket}</span><span class="tag">${tag}</span>${highlightedAttributes}<span class="bracket">${closeBracket}</span>`;
-            } else if (text && text.trim().length > 0) { // It's text content (non-empty)
-                return `<span class="text">${text}</span>`;
-            } else {
-                 return match; // Return original if it's just whitespace or doesn't match a clear text node
+                // 2. Separate the closing bracket (&gt;)
+                const closingBracket = highlightedAttributes.match(/&gt;$/) ? highlightedAttributes.slice(-4) : '';
+                highlightedAttributes = highlightedAttributes.slice(0, -4); // Remove &gt; for separate highlighting
+
+                // 3. Highlight tag name and brackets
+                return `<span class="bracket">${bracketStart}</span><span class="tag">${tagName}</span>${highlightedAttributes}<span class="bracket">${closingBracket}</span>`;
+
+            } else if (textContent) { // It's text content
+                if (textContent.trim().length > 0) {
+                    return `<span class="text">${textContent}</span>`;
+                }
+                return textContent; // Return whitespace as is
             }
+            return match; // Fallback
         });
         
-        // Handle standalone ampersands (e.g., in URLs) that might have been escaped to &amp;
+        // Final pass for &amp; that might be part of URLs (must be within a highlighted span)
         highlightedCode = highlightedCode.replace(/&amp;/g, '<span class="value">&amp;</span>');
 
         return highlightedCode;
@@ -220,9 +96,9 @@
 <p style="text-align: center;">Source: <a href="${srcValue}" target="_blank" rel="noopener">${title}</a> (${source}, ${year})</p>`;
 
         // 4. Highlight the code for display
-        // The raw HTML is first escaped (only <, > and &)
+        // FIRST: Full HTML Escape
         const escapedHtml = escapeHtml(rawGeneratedHtml);
-        // Then the highlighting spans are applied
+        // SECOND: Apply highlighting spans
         const highlightedHtml = highlightCode(escapedHtml);
 
         // 5. Display the Highlighted Code
