@@ -134,45 +134,55 @@
 </div>
 
 <script>
-    function highlightCode(code) {
-        // This regex breaks the HTML into tags, attributes, values, and regular text
-        const regex = /(<[/!]?)([a-z0-9]+)|([a-z0-9-]+)=(".*?"|'.*?')|([^<>&]+)|(&\w+;)/ig;
-
-        // Simplified approach: Target tags, attributes, and values with capture groups
-        // Captures: 1. Opening/Closing Bracket/Slash (e.g., <, </) 
-        //           2. Tag name (e.g., div, iframe)
-        //           3. Attribute name (e.g., class, style)
-        //           4. Attribute value (e.g., "flex", '0')
-        //           5. Content between tags (e.g., "Source:")
-        const htmlRegex = /(\s*<[/!]?)(\w+)([^>]*)(>)|(\s*[^<>&]+)/g;
-
-        // Function to process attributes within a tag (group 3 from htmlRegex)
-        const attributeRegex = /(\s+)([a-z0-9-]+)(=")([^"]*)(")/gi;
-
-        let highlightedCode = code.replace(htmlRegex, (match, bracket, tag, attributes, closeBracket, text) => {
-            if (tag) { // It's a tag
-                // Highlight attributes within the tag
-                let highlightedAttributes = attributes.replace(attributeRegex, (attrMatch, space, attrName, eqQuote, attrValue, endQuote) => {
-                    // Highlight attribute name and value
-                    return `${space}<span class="attribute">${attrName}</span>${eqQuote}<span class="value">${attrValue}</span>${endQuote}`;
-                });
-                // Highlight tag name and brackets
-                return `<span class="bracket">${bracket}</span><span class="tag">${tag}</span>${highlightedAttributes}<span class="bracket">${closeBracket}</span>`;
-            } else if (text) { // It's text content
-                return `<span class="text">${text}</span>`;
-            }
-            return match; // Should not happen
-        });
-        
-        // Final pass for angle brackets outside the main regex capture (e.g., in text nodes)
-        highlightedCode = highlightedCode.replace(/&lt;/g, '<span class="bracket">&lt;</span>').replace(/&gt;/g, '<span class="bracket">&gt;</span>');
-        
-        return highlightedCode;
+    /**
+     * Corrected escapeHtml: Only escapes <, >, and & (leaving " intact for regex)
+     */
+    function escapeHtml(text) {
+        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     }
 
-    function escapeHtml(text) {
-        // Essential for displaying code as text, not as live HTML
-        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    /**
+     * Highlights HTML code by wrapping elements in span tags with specific classes.
+     * Assumes input is already escaped (except for quotes).
+     */
+    function highlightCode(escapedCode) {
+        // Regex to match tags and content.
+        // Group 1: Opening tag bracket (&lt; or &lt;/)
+        // Group 2: Tag name (e.g., div, iframe)
+        // Group 3: Attributes string
+        // Group 4: Closing tag bracket (&gt;)
+        // Group 5: Content between tags/plain text
+        const htmlRegex = /(\s*&lt;[/!]?)(\w+)([^&]*)(&gt;)|(\s*[^&]*)/g;
+
+        // Regex to match attributes within the attribute string
+        // Group 1: Space
+        // Group 2: Attribute name
+        // Group 3: ="
+        // Group 4: Attribute value
+        // Group 5: "
+        const attributeRegex = /(\s+)([a-z0-9-]+)(=)(")([^"]*)(")/gi;
+
+        let highlightedCode = escapedCode.replace(htmlRegex, (match, bracket, tag, attributes, closeBracket, text) => {
+            if (tag) { // It's a tag
+                // Highlight attributes within the tag
+                let highlightedAttributes = attributes.replace(attributeRegex, (attrMatch, space, attrName, equals, quoteOpen, attrValue, quoteClose) => {
+                    // Highlight attribute name, equals, and value, preserving quotes/spaces
+                    return `${space}<span class="attribute">${attrName}</span>${equals}${quoteOpen}<span class="value">${attrValue}</span>${quoteClose}`;
+                });
+                
+                // Highlight tag name and brackets
+                return `<span class="bracket">${bracket}</span><span class="tag">${tag}</span>${highlightedAttributes}<span class="bracket">${closeBracket}</span>`;
+            } else if (text && text.trim().length > 0) { // It's text content (non-empty)
+                return `<span class="text">${text}</span>`;
+            } else {
+                 return match; // Return original if it's just whitespace or doesn't match a clear text node
+            }
+        });
+        
+        // Handle standalone ampersands (e.g., in URLs) that might have been escaped to &amp;
+        highlightedCode = highlightedCode.replace(/&amp;/g, '<span class="value">&amp;</span>');
+
+        return highlightedCode;
     }
 
     function generateCode() {
@@ -210,7 +220,9 @@
 <p style="text-align: center;">Source: <a href="${srcValue}" target="_blank" rel="noopener">${title}</a> (${source}, ${year})</p>`;
 
         // 4. Highlight the code for display
+        // The raw HTML is first escaped (only <, > and &)
         const escapedHtml = escapeHtml(rawGeneratedHtml);
+        // Then the highlighting spans are applied
         const highlightedHtml = highlightCode(escapedHtml);
 
         // 5. Display the Highlighted Code
