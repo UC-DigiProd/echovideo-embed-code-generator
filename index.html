@@ -1,0 +1,139 @@
+<style>
+    /* Import Lato font (or a similar, modern sans-serif fallback) */
+    @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
+
+    /* Updated styling for the generator form */
+    .generator-container {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        /* Updated Font Family */
+        font-family: 'Lato', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        /* Updated Text Color */
+        color: #414042;
+    }
+    .generator-container h3 {
+        /* Ensure the title also uses the specified text color */
+        color: #414042;
+    }
+    .generator-container label {
+        display: block;
+        margin-top: 10px;
+        font-weight: bold;
+    }
+    .generator-container input[type="text"],
+    .generator-container textarea {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+        /* Inherit updated font/color */
+        font-family: inherit;
+        color: inherit;
+    }
+    .generator-container button {
+        /* Updated Button Color */
+        background-color: #009ABC;
+        /* Updated Button Text Color */
+        color: white;
+        padding: 10px 15px;
+        margin-top: 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1em;
+        /* Inherit updated font */
+        font-family: inherit;
+        /* Ensure smooth transition for hover effect */
+        transition: background-color 0.2s ease;
+    }
+    .generator-container button:hover {
+        /* Updated Hover Color */
+        background-color: #006C91;
+    }
+    #outputCode {
+        background-color: #f4f4f4;
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-top: 20px;
+        white-space: pre-wrap;
+        word-break: break-all;
+        min-height: 50px;
+        /* Standard monospace font for code output */
+        font-family: monospace;
+        /* Ensure code output text color is still readable */
+        color: #333;
+    }
+</style>
+
+<div class="generator-container">
+    <h3>Echo video embed code generator (for Canvas LMS)</h3>
+
+    <label for="videoTitle">Video title:</label>
+    <input type="text" id="videoTitle" placeholder="Video title">
+
+    <label for="source">Source:</label>
+    <input type="text" id="source" value="UC">
+
+    <label for="year">Year:</label>
+    <input type="text" id="year" value="2026">
+
+    <label for="ltiCode">Echo LTI iframe code (paste full code including the opening and closing <iframe> </iframe> tags):</label>
+    <textarea id="ltiCode" rows="5" placeholder=""></textarea>
+
+    <button onclick="generateCode()">Generate HTML code</button>
+
+    <label for="outputCode">Generated code (copy and paste this code into the canvas page, replacing the original LTI iframe code):</label>
+    <div id="outputCode"></div>
+</div>
+
+<script>
+    function generateCode() {
+        const title = document.getElementById('videoTitle').value.trim();
+        const source = document.getElementById('source').value.trim();
+        const year = document.getElementById('year').value.trim();
+        const ltiCode = document.getElementById('ltiCode').value.trim();
+        const outputDiv = document.getElementById('outputCode');
+
+        // 1. Validate Input
+        if (!title || !ltiCode) {
+            outputDiv.textContent = 'Please provide a Video title and the Echo LTI iframe Code.';
+            return;
+        }
+
+        // 2. Extract the [src] attribute using a Regular Expression
+        const srcRegex = /src=["'](.*?)["']/i;
+        const match = ltiCode.match(srcRegex);
+        
+        if (!match || match.length < 2) {
+            outputDiv.textContent = 'Error: Could not extract a valid [src] attribute from the provided LTI code.';
+            return;
+        }
+
+        const srcValue = match[1]; // The captured group (the actual URL)
+
+        // 3. Construct the Final HTML
+        const generatedHtml = 
+`<div style="display: flex; justify-content: center; align-items: center; max-width: 704px; min-width: 320px; margin: auto;">
+    <div style="position: relative; width: 100%; padding-bottom: 65.625%; height: 0;"><iframe class="lti-embed" style="border: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;" title="Echo video: ${title}" role="region" src="${srcValue}" name="Echo Video Player iframe" loading="lazy" allowfullscreen="allowfullscreen" webkitallowfullscreen="webkitallowfullscreen" mozallowfullscreen="mozallowfullscreen" allow="geolocation *; microphone *; camera *; midi *; encrypted-media *; autoplay *; clipboard-write *; display-capture *" aria-label="Echo video player"></iframe></div>
+</div>
+<p style="text-align: center;">Source: <a href="${srcValue}" target="_blank" rel="noopener">${title}</a> (${source}, ${year})</p>`;
+
+        // 4. Display the Generated Code
+        outputDiv.textContent = generatedHtml;
+    }
+    
+    // Set initial placeholder text for the output div on load
+    document.addEventListener('DOMContentLoaded', () => {
+        const outputDiv = document.getElementById('outputCode');
+        // Check if the div still has the default text before setting the final one
+        if (outputDiv.textContent.includes("Generated code (copy and paste this code into the canvas page")) {
+            // This is the updated placeholder/example text for the div, which is now set directly in the HTML
+            // document.getElementById('outputCode').textContent = "Generated code (copy and paste this code into the canvas page, replacing the original LTI iframe code)";
+        }
+    });
+</script>
