@@ -1,188 +1,270 @@
 <style>
-    /* Import Lato font */
-    @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
+    /* Import Lato font */
+    @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
 
-    .generator-container {
-        max-width: 600px;
-        margin: 20px auto;
-        padding: 20px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        font-family: 'Lato', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-        color: #414042;
-    }
-    .generator-container h3 {
-        color: #414042;
-    }
-    .generator-container label {
-        display: block;
-        margin-top: 10px;
-        font-weight: bold;
-    }
-    .generator-container input[type="text"],
-    .generator-container textarea {
-        width: 100%;
-        padding: 8px;
-        margin-top: 5px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        box-sizing: border-box;
-        font-family: inherit;
-        color: inherit;
-    }
-    .generator-container .button-group {
-        display: flex;
-        gap: 10px;
-        margin-top: 20px;
-        margin-bottom: 20px;
-    }
-    .generator-container button {
-        background-color: #009ABC;
-        color: white;
-        padding: 10px 15px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 1em;
-        font-family: inherit;
-        transition: background-color 0.2s ease;
-        flex-grow: 1;
-        margin-top: 0;
-    }
-    .generator-container button:hover {
-        background-color: #006C91;
-    }
-    
-    #resetButton {
-        background-color: #A9A9A9;
-    }
-    #resetButton:hover {
-        background-color: #808080;
-    }
+    .generator-container {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-family: 'Lato', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        color: #414042;
+    }
+    .generator-container h3 {
+        color: #414042;
+    }
+    .generator-container label {
+        display: block;
+        margin-top: 10px;
+        font-weight: bold;
+    }
+    .generator-container input[type="text"],
+    .generator-container textarea {
+        width: 100%;
+        padding: 8px;
+        margin-top: 5px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+        font-family: inherit;
+        color: inherit;
+    }
+    .generator-container .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    .generator-container button {
+        background-color: #009ABC;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1em;
+        font-family: inherit;
+        transition: background-color 0.2s ease;
+        flex-grow: 1;
+        margin-top: 0;
+    }
+    .generator-container button:hover {
+        background-color: #006C91;
+    }
+    
+    #resetButton {
+        background-color: #A9A9A9;
+    }
+    #resetButton:hover {
+        background-color: #808080;
+    }
 
-    #outputCode {
-        background-color: #f4f4f4;
-        border: 1px solid #ddd;
-        padding: 15px;
-        margin-top: 5px;
-        white-space: pre-wrap;
-        word-break: break-all;
-        min-height: 50px;
-        font-family: monospace;
-        color: #333;
-    }
-    #copyButton {
-        padding: 8px 12px;
-        font-size: 0.9em;
-        margin-top: 10px;
-        background-color: #009ABC; 
-        transition: background-color 0.2s ease;
-        display: block;
-        width: 100%;
-        box-sizing: border-box;
-    }
-    #copyButton:hover {
-        background-color: #006C91;
-    }
-    
+    #outputCode {
+        background-color: #f4f4f4;
+        border: 1px solid #ddd;
+        padding: 15px;
+        margin-top: 5px;
+        white-space: pre-wrap;
+        word-break: break-all;
+        min-height: 50px;
+        font-family: monospace;
+        color: #333;
+    }
+    /* --- Syntax Highlighting Styles --- */
+    #outputCode .tag { /* HTML element names like div, iframe, p */
+        color: #000080; /* Dark Blue */
+        font-weight: bold;
+    }
+    #outputCode .attribute { /* Attribute names like style, class, src */
+        color: #8B0000; /* Dark Red */
+    }
+    #outputCode .value { /* Attribute values, especially strings like "flex", "center" */
+        color: #006400; /* Dark Green */
+    }
+    #outputCode .text { /* The actual text content, like the title in the p tag */
+        color: #333; /* Dark Grey/Black */
+    }
+    #outputCode .bracket { /* The angle brackets < and > */
+        color: #000080;
+        font-weight: bold;
+    }
+    /* --- End Syntax Highlighting Styles --- */
+
+    #copyButton {
+        padding: 8px 12px;
+        font-size: 0.9em;
+        margin-top: 10px;
+        background-color: #009ABC; 
+        transition: background-color 0.2s ease;
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    #copyButton:hover {
+        background-color: #006C91;
+    }
+    
 </style>
 
 <div class="generator-container">
-    <h3>Echo video embed code generator (for Canvas LMS)</h3>
+    <h3>Echo video embed code generator (for Canvas LMS)</h3>
 
-    <label for="videoTitle">Video title:</label>
-    <input type="text" id="videoTitle" placeholder="Video title">
+    <label for="videoTitle">Video title:</label>
+    <input type="text" id="videoTitle" placeholder="Video title">
 
-    <label for="source">Source:</label>
-    <input type="text" id="source" value="">
+    <label for="source">Source:</label>
+    <input type="text" id="source" value="UC">
 
-    <label for="year">Year:</label>
-    <input type="text" id="year" value="">
+    <label for="year">Year:</label>
+    <input type="text" id="year" value="2026">
 
-    <label for="ltiCode">Echo LTI iframe code (paste full code including the opening and closing iframe tags):</label>
-    <textarea id="ltiCode" rows="5" placeholder=""></textarea>
+    <label for="ltiCode">Echo LTI iframe code (paste full code including the opening and closing iframe tags):</label>
+    <textarea id="ltiCode" rows="5" placeholder=""></textarea>
 
-    <div class="button-group">
-        <button onclick="generateCode()">Generate HTML code</button>
-        <button id="resetButton" onclick="resetGenerator()">Reset Generator</button>
-    </div>
+    <div class="button-group">
+        <button onclick="generateCode()">Generate HTML code</button>
+        <button id="resetButton" onclick="resetGenerator()">Reset generator</button>
+    </div>
 
-    <label for="outputCode">Generated code (copy and paste this code into the canvas page, replacing the original LTI iframe code):</label>
-    <div id="outputCode"></div>
-    
-    <button id="copyButton" onclick="copyCode()" style="display: none;">Copy Code to Clipboard</button>
+    <label for="outputCode">Generated code (copy and paste this code into the canvas page, replacing the original LTI iframe code):</label>
+    <div id="outputCode"></div>
+    
+    <button id="copyButton" onclick="copyCode()" style="display: none;">Copy code to clipboard</button>
 </div>
 
 <script>
-    function generateCode() {
-        const title = document.getElementById('videoTitle').value.trim();
-        const source = document.getElementById('source').value.trim();
-        const year = document.getElementById('year').value.trim();
-        const ltiCode = document.getElementById('ltiCode').value.trim();
-        const outputDiv = document.getElementById('outputCode');
-        const copyBtn = document.getElementById('copyButton');
+    /**
+     * Corrected escapeHtml: Only escapes <, >, and & (leaving " intact for regex)
+     */
+    function escapeHtml(text) {
+        return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
 
-        // 1. Validate Input
-        if (!title || !ltiCode) {
-            outputDiv.textContent = 'Please provide a Video title and the Echo LTI iframe Code.';
-            copyBtn.style.display = 'none';
-            return;
-        }
+    /**
+     * Highlights HTML code by wrapping elements in span tags with specific classes.
+     * Assumes input is already escaped (except for quotes).
+     */
+    function highlightCode(escapedCode) {
+        // Regex to match tags and content.
+        // Group 1: Opening tag bracket (&lt; or &lt;/)
+        // Group 2: Tag name (e.g., div, iframe)
+        // Group 3: Attributes string
+        // Group 4: Closing tag bracket (&gt;)
+        // Group 5: Content between tags/plain text
+        const htmlRegex = /(\s*&lt;[/!]?)(\w+)([^&]*)(&gt;)|(\s*[^&]*)/g;
 
-        // 2. Extract the [src] attribute
-        const srcRegex = /src=["'](.*?)["']/i;
-        const match = ltiCode.match(srcRegex);
-        
-        if (!match || match.length < 2) {
-            outputDiv.textContent = 'Error: Could not extract a valid [src] attribute from the provided LTI code.';
-            copyBtn.style.display = 'none';
-            return;
-        }
+        // Regex to match attributes within the attribute string
+        // Group 1: Space
+        // Group 2: Attribute name
+        // Group 3: ="
+        // Group 4: Attribute value
+        // Group 5: "
+        const attributeRegex = /(\s+)([a-z0-9-]+)(=)(")([^"]*)(")/gi;
 
-        const srcValue = match[1];
+        let highlightedCode = escapedCode.replace(htmlRegex, (match, bracket, tag, attributes, closeBracket, text) => {
+            if (tag) { // It's a tag
+                // Highlight attributes within the tag
+                let highlightedAttributes = attributes.replace(attributeRegex, (attrMatch, space, attrName, equals, quoteOpen, attrValue, quoteClose) => {
+                    // Highlight attribute name, equals, and value, preserving quotes/spaces
+                    return `${space}<span class="attribute">${attrName}</span>${equals}${quoteOpen}<span class="value">${attrValue}</span>${quoteClose}`;
+                });
+                
+                // Highlight tag name and brackets
+                return `<span class="bracket">${bracket}</span><span class="tag">${tag}</span>${highlightedAttributes}<span class="bracket">${closeBracket}</span>`;
+            } else if (text && text.trim().length > 0) { // It's text content (non-empty)
+                return `<span class="text">${text}</span>`;
+            } else {
+                 return match; // Return original if it's just whitespace or doesn't match a clear text node
+            }
+        });
+        
+        // Handle standalone ampersands (e.g., in URLs) that might have been escaped to &amp;
+        highlightedCode = highlightedCode.replace(/&amp;/g, '<span class="value">&amp;</span>');
 
-        // 3. Construct the Final HTML
-        const generatedHtml = 
+        return highlightedCode;
+    }
+
+    function generateCode() {
+        const title = document.getElementById('videoTitle').value.trim();
+        const source = document.getElementById('source').value.trim();
+        const year = document.getElementById('year').value.trim();
+        const ltiCode = document.getElementById('ltiCode').value.trim();
+        const outputDiv = document.getElementById('outputCode');
+        const copyBtn = document.getElementById('copyButton');
+
+        // 1. Validate Input
+        if (!title || !ltiCode) {
+            outputDiv.innerHTML = 'Please provide a **Video title** and the **Echo LTI iframe Code**.';
+            copyBtn.style.display = 'none';
+            return;
+        }
+
+        // 2. Extract the [src] attribute
+        const srcRegex = /src=["'](.*?)["']/i;
+        const match = ltiCode.match(srcRegex);
+        
+        if (!match || match.length < 2) {
+            outputDiv.innerHTML = 'Error: Could not extract a valid `src` attribute from the provided LTI code.';
+            copyBtn.style.display = 'none';
+            return;
+        }
+
+        const srcValue = match[1];
+
+        // 3. Construct the Final HTML
+        const rawGeneratedHtml =
 `<div style="display: flex; justify-content: center; align-items: center; max-width: 704px; min-width: 320px; margin: auto;">
-    <div style="position: relative; width: 100%; padding-bottom: 65.625%; height: 0;"><iframe class="lti-embed" style="border: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;" title="Echo video: ${title}" role="region" src="${srcValue}" name="Echo Video Player iframe" loading="lazy" allowfullscreen="allowfullscreen" webkitallowfullscreen="webkitallowfullscreen" mozallowfullscreen="mozallowfullscreen" allow="geolocation *; microphone *; camera *; midi *; encrypted-media *; autoplay *; clipboard-write *; display-capture *" aria-label="Echo video player"></iframe></div>
+    <div style="position: relative; width: 100%; padding-bottom: 65.625%; height: 0;"><iframe class="lti-embed" style="border: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;" title="Echo video: ${title}" role="region" src="${srcValue}" name="Echo Video Player iframe" loading="lazy" allowfullscreen="allowfullscreen" webkitallowfullscreen="webkitallowfullscreen" mozallowfullscreen="mozallowfullscreen" allow="geolocation *; microphone *; camera *; midi *; encrypted-media *; autoplay *; clipboard-write *; display-capture *" aria-label="Echo video player"></iframe></div>
 </div>
 <p style="text-align: center;">Source: <a href="${srcValue}" target="_blank" rel="noopener">${title}</a> (${source}, ${year})</p>`;
 
-        // 4. Display the Generated Code
-        outputDiv.textContent = generatedHtml;
-        copyBtn.style.display = 'block'; 
-    }
-    
-    function copyCode() {
-        const outputDiv = document.getElementById('outputCode');
-        const code = outputDiv.textContent;
-        const copyBtn = document.getElementById('copyButton');
-        
-        if (!code || code.includes('Please provide') || code.includes('Error: Could not extract')) {
-             alert('No valid code generated yet to copy.');
-             return;
-        }
+        // 4. Highlight the code for display
+        // The raw HTML is first escaped (only <, > and &)
+        const escapedHtml = escapeHtml(rawGeneratedHtml);
+        // Then the highlighting spans are applied
+        const highlightedHtml = highlightCode(escapedHtml);
 
-        navigator.clipboard.writeText(code).then(() => {
-            copyBtn.textContent = 'Copied!';
-            setTimeout(() => {
-                copyBtn.textContent = 'Copy Code to Clipboard';
-            }, 2000);
-        }).catch(err => {
-            console.error('Failed to copy: ', err);
-            alert('Failed to copy the code. Please try selecting the text manually.');
-        });
-    }
+        // 5. Display the Highlighted Code
+        outputDiv.innerHTML = highlightedHtml; // Use innerHTML to render the span tags
+        copyBtn.style.display = 'block'; 
+        
+        // Store the *unhighlighted* code for copying
+        outputDiv.dataset.rawCode = rawGeneratedHtml;
+    }
+    
+    function copyCode() {
+        const outputDiv = document.getElementById('outputCode');
+        // Use the raw code stored in the dataset for copying
+        const code = outputDiv.dataset.rawCode;
+        const copyBtn = document.getElementById('copyButton');
+        
+        if (!code || code.includes('Please provide') || code.includes('Error: Could not extract')) {
+             alert('No valid code generated yet to copy.');
+             return;
+        }
 
-    function resetGenerator() {
-        document.getElementById('videoTitle').value = '';
-        document.getElementById('source').value = '';
-        document.getElementById('year').value = '';
-        document.getElementById('ltiCode').value = '';
-        
-        document.getElementById('outputCode').textContent = '';
-        document.getElementById('copyButton').style.display = 'none';
-        
-        // Removed: alert('Generator reset successfully.');
-    }
+        navigator.clipboard.writeText(code).then(() => {
+            copyBtn.textContent = 'Copied!';
+            setTimeout(() => {
+                copyBtn.textContent = 'Copy code to clipboard';
+            }, 2000);
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+            alert('Failed to copy the code. Please try selecting the text manually.');
+        });
+    }
+
+    function resetGenerator() {
+        document.getElementById('videoTitle').value = '';
+        document.getElementById('source').value = 'UC';
+        document.getElementById('year').value = '2026';
+        document.getElementById('ltiCode').value = '';
+        
+        const outputDiv = document.getElementById('outputCode');
+        outputDiv.innerHTML = ''; // Use innerHTML for reset
+        outputDiv.removeAttribute('data-raw-code'); // Clear raw code
+        document.getElementById('copyButton').style.display = 'none';
+        
+    }
 </script>
