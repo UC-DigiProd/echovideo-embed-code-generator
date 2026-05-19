@@ -13,10 +13,11 @@
     }
     .generator-container h3 {
         color: #414042;
+        margin-bottom: 15px;
     }
     .generator-container label {
         display: block;
-        margin-top: 10px;
+        margin-top: 12px;
         font-weight: bold;
     }
     .generator-container input[type="text"],
@@ -30,6 +31,30 @@
         font-family: inherit;
         color: inherit;
     }
+    
+    /* Media Toggle Styles */
+    .generator-container .radio-group {
+        display: flex;
+        gap: 20px;
+        margin: 15px 0;
+        background: #f9f9f9;
+        padding: 10px;
+        border-radius: 4px;
+        border: 1px solid #eef0f2;
+    }
+    .generator-container .radio-option {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        font-weight: normal;
+        margin-top: 0;
+    }
+    .generator-container .radio-option input {
+        cursor: pointer;
+        margin: 0;
+    }
+
     .generator-container .button-group {
         display: flex;
         gap: 10px;
@@ -84,14 +109,23 @@
     #copyButton:hover {
         background-color: #006C91;
     }
-    
 </style>
 
 <div class="generator-container">
-    <h3>Echo video embed code generator (for Canvas LMS)</h3>
+    <h3>Media Embed Code Generator (Canvas Sanitizer-Proof)</h3>
+
+    <label>Select media source type:</label>
+    <div class="radio-group">
+        <label class="radio-option">
+            <input type="radio" name="mediaType" value="echo" checked onchange="toggleMediaType()"> Echo360 LTI Asset
+        </label>
+        <label class="radio-option">
+            <input type="radio" name="mediaType" value="youtube" onchange="toggleMediaType()"> YouTube / Standard Video
+        </label>
+    </div>
 
     <label for="videoTitle">Video title:</label>
-    <input type="text" id="videoTitle" placeholder="Video title">
+    <input type="text" id="videoTitle" placeholder="e.g., AI changing use in society">
 
     <label for="source">Source:</label>
     <input type="text" id="source" value="UC">
@@ -99,56 +133,95 @@
     <label for="year">Year:</label>
     <input type="text" id="year" value="2026">
 
-    <label for="ltiCode">Echo LTI iframe code (paste full code including the opening and closing iframe tags):</label>
-    <textarea id="ltiCode" rows="5" placeholder=""></textarea>
+    <label id="inputCodeLabel" for="embedCode">Echo LTI iframe code (paste full code including the opening and closing iframe tags):</label>
+    <textarea id="embedCode" rows="5" placeholder=""></textarea>
 
     <div class="button-group">
         <button onclick="generateCode()">Generate HTML code</button>
         <button id="resetButton" onclick="resetGenerator()">Reset generator</button>
     </div>
 
-    <label for="outputCode">Generated code (copy and paste this code into the canvas page, replacing the original LTI iframe code):</label>
+    <label for="outputCode">Generated code (copy and paste this code into the canvas page, replacing the original broken block):</label>
     <div id="outputCode"></div>
     
     <button id="copyButton" onclick="copyCode()" style="display: none;">Copy code to clipboard</button>
 </div>
 
 <script>
+    function toggleMediaType() {
+        const selectedType = document.querySelector('input[name="mediaType"]:checked').value;
+        const label = document.getElementById('inputCodeLabel');
+        const titleInput = document.getElementById('videoTitle');
+        
+        if (selectedType === 'echo') {
+            label.textContent = "Echo LTI iframe code (paste full code including the opening and closing iframe tags):";
+            titleInput.placeholder = "e.g., AI changing use in society";
+        } else {
+            label.textContent = "YouTube embed code / Standard Iframe (paste full iframe embed block):";
+            titleInput.placeholder = "e.g., Introduction to UDL Framework";
+        }
+    }
+
     function generateCode() {
         const title = document.getElementById('videoTitle').value.trim();
         const source = document.getElementById('source').value.trim();
         const year = document.getElementById('year').value.trim();
-        const ltiCode = document.getElementById('ltiCode').value.trim();
+        const embedCode = document.getElementById('embedCode').value.trim();
         const outputDiv = document.getElementById('outputCode');
         const copyBtn = document.getElementById('copyButton');
+        const mediaType = document.querySelector('input[name="mediaType"]:checked').value;
 
         // 1. Validate Input
-        if (!title || !ltiCode) {
-            outputDiv.textContent = 'Please provide a Video title and the Echo LTI iframe Code.';
+        if (!title || !embedCode) {
+            outputDiv.textContent = 'Please provide a Video title and the raw iframe embed code.';
             copyBtn.style.display = 'none';
             return;
         }
 
-        // 2. Extract the [src] attribute
+        // 2. Extract the [src] attribute from the pasted iframe block
         const srcRegex = /src=["'](.*?)["']/i;
-        const match = ltiCode.match(srcRegex);
+        const match = embedCode.match(srcRegex);
         
         if (!match || match.length < 2) {
-            outputDiv.textContent = 'Error: Could not extract a valid [src] attribute from the provided LTI code.';
+            outputDiv.textContent = 'Error: Could not extract a valid [src] attribute from the provided iframe snippet.';
             copyBtn.style.display = 'none';
             return;
         }
 
         const srcValue = match[1];
 
-        // 3. Construct the Final HTML
-        const generatedHtml = 
-`<div style="display: flex; justify-content: center; align-items: center; max-width: 704px; min-width: 320px; margin: auto;">
-    <div style="position: relative; width: 100%; padding-bottom: 65.625%; height: 0;"><iframe class="lti-embed" style="border: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;" title="Echo video: ${title}" role="region" src="${srcValue}" name="Echo Video Player iframe" loading="lazy" allowfullscreen="allowfullscreen" webkitallowfullscreen="webkitallowfullscreen" mozallowfullscreen="mozallowfullscreen" allow="geolocation *; microphone *; camera *; midi *; encrypted-media *; autoplay *; clipboard-write *; display-capture *" aria-label="Echo video player"></iframe></div>
-</div>
-<p style="text-align: center;">Source: <a href="${srcValue}" target="_blank" rel="noopener">${title}</a> (${source}, ${year})</p>`;
+        // 3. Set content parameters depending on target platform
+        let iframeClass = "lti-embed";
+        let ariaLabel = "Echo video player";
+        let iframeTitle = `Echo video: ${title}`;
+        let iframeAllow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
 
-        // 4. Display the Generated Code
+        if (mediaType === 'youtube') {
+            iframeClass = "video-embed";
+            ariaLabel = "YouTube video player";
+            iframeTitle = `YouTube video: ${title}`;
+            iframeAllow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen";
+        }
+
+        // 4. Construct Sanitizer-Proof HTML Output
+        const generatedHtml = 
+`<div style="max-width: 704px; min-width: 320px; width: 100%; margin: 0 auto;">
+    <div style="width: 100%; height: 65vw; max-height: 475px; overflow: hidden; background: #ffffff; border-radius: 4px; border: 1px solid #cdcdcd;">
+        <iframe 
+            class="${iframeClass}" 
+            style="width: 100%; height: 100%; border: none; display: block;" 
+            title="${iframeTitle}" 
+            src="${srcValue}" 
+            loading="lazy" 
+            allowfullscreen="allowfullscreen" 
+            allow="${iframeAllow}" 
+            aria-label="${ariaLabel}">
+        </iframe>
+    </div>
+</div>
+<p style="text-align: center; margin-top: 12px;">Source: <a href="${srcValue}" target="_blank" rel="noopener">${title}</a> (${source}, ${year})</p>`;
+
+        // 5. Output rendering
         outputDiv.textContent = generatedHtml;
         copyBtn.style.display = 'block'; 
     }
@@ -158,7 +231,7 @@
         const code = outputDiv.textContent;
         const copyBtn = document.getElementById('copyButton');
         
-        if (!code || code.includes('Please provide') || code.includes('Error: Could not extract')) {
+        if (!code || code.includes('Please provide') || code.includes('Error:')) {
              alert('No valid code generated yet to copy.');
              return;
         }
@@ -170,7 +243,7 @@
             }, 2000);
         }).catch(err => {
             console.error('Failed to copy: ', err);
-            alert('Failed to copy the code. Please try selecting the text manually.');
+            alert('Failed to copy the code. Please manually select and copy the text block.');
         });
     }
 
@@ -178,10 +251,11 @@
         document.getElementById('videoTitle').value = '';
         document.getElementById('source').value = 'UC';
         document.getElementById('year').value = '2026';
-        document.getElementById('ltiCode').value = '';
+        document.getElementById('embedCode').value = '';
+        document.querySelectorAll('input[name="mediaType"]')[0].checked = true;
         
+        toggleMediaType();
         document.getElementById('outputCode').textContent = '';
         document.getElementById('copyButton').style.display = 'none';
-        
     }
 </script>
